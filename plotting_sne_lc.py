@@ -21,8 +21,18 @@ sample = Table.read('OpenSupernovaCatalog.csv')
 
 bands = ['R', 'r', "r'"]
 
+write_text_lc = False
+plot_figure = True
+
 for name in sample['Name']:
     try:
+        # This assumes that the data files are already downloaded and
+        # available as json files.  Change the data aquiring to the
+        # following line for downloading it from the website
+        # https://sne.space/
+        #
+        # sne = requests.get('http://sne.space/sne/{0}.json'.format(name)).json()
+
         with open('data/all_sne/{0}.json'.format(name)) as data_file:
             sne = json.load(data_file)
     except FileNotFoundError:
@@ -60,12 +70,18 @@ for name in sample['Name']:
 
         if len(mags) == 0:
             continue
-        plt.clf()
-        plt.scatter(lc_table['time'] / (1 + zSn), lc_table['mags'] - muSn)
-        plt.ylim(-15, -20)
-        plt.xlim(-20, 100)
-        plt.xlabel('Days after maximum')
-        plt.ylabel('Absolute magnitude')
-        plt.grid()
-        plt.minorticks_on()
-        plt.savefig("plots/{0}_{1}".format(name, band))
+
+        if plot_figure:
+            plt.clf()
+            plt.scatter(lc_table['time'] / (1 + zSn), lc_table['mags'] - muSn)
+            plt.ylim(-15, -20)
+            plt.xlim(-20, 100)
+            plt.xlabel('Days after maximum')
+            plt.ylabel('Absolute magnitude')
+            plt.grid()
+            plt.minorticks_on()
+            plt.savefig("plots/{0}_{1}".format(name, band))
+
+        if write_text_lc:
+            lc_table.write('{0}_{1}.txt'.format(name, band),
+                           format='ascii.no_header')
