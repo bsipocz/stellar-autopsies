@@ -2,6 +2,7 @@
 #
 
 import json
+import requests
 import logging
 import matplotlib.pylab as plt
 
@@ -25,19 +26,15 @@ write_text_lc = False
 plot_figure = True
 
 for name in sample['Name']:
+    # We assume that the data files are already downloaded and available as
+    # json files and if not we download them from the website
+    # https://sne.space/
     try:
-        # This assumes that the data files are already downloaded and
-        # available as json files.  Change the data aquiring to the
-        # following line for downloading it from the website
-        # https://sne.space/
-        #
-        # sne = requests.get('http://sne.space/sne/{0}.json'.format(name)).json()
-
         with open('data/all_sne/{0}.json'.format(name)) as data_file:
             sne = json.load(data_file)
     except FileNotFoundError:
-        logger.warning("{0} datafile is missing".format(name))
-        continue
+        logger.warning("{0} datafile is missing locally".format(name))
+        sne = requests.get('http://sne.space/sne/{0}.json'.format(name)).json()
 
     for sn in sne:
         sn = sne[sn]
@@ -51,7 +48,7 @@ for name in sample['Name']:
     try:
         zSn = float(sn['redshift'][0]['value'])
     except KeyError:
-        logger.warning("There is no redshift for {0}, using z=0 instead".format(name))
+        logger.warning("There is no redshift for {0}, using z=0".format(name))
         zSn = 0
     muSn = Distance(z=zSn).distmod.value
 
