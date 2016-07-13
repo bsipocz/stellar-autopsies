@@ -5,6 +5,7 @@ import json
 import requests
 import logging
 import matplotlib.pylab as plt
+import numpy as np
 
 from astropy.table import Table
 from astropy.time import Time
@@ -24,6 +25,12 @@ bands = ['R', 'r', "r'"]
 
 write_text_lc = False
 plot_figure = True
+
+time_range = (-20, 100)
+mag_range = (-15, -20)
+
+mindata = 15
+
 
 for name in sample['Name']:
     # We assume that the data files are already downloaded and available as
@@ -59,14 +66,20 @@ for name in sample['Name']:
         continue
 
     for band in bands:
-        mags = [float(lc[i]['magnitude']) for i in range(len(lc))
-                if lc[i].get('band') == band]
-        time = [float(lc[i]['time']) - maxdate for i in range(len(lc))
-                if lc[i].get('band') == band]
+        mags = np.array([float(lc[i]['magnitude']) for i in range(len(lc))
+                         if lc[i].get('band') == band])
+        time = np.array([float(lc[i]['time']) - maxdate for i in range(len(lc))
+                         if lc[i].get('band') == band])
         lc_table = Table([time, mags], names=['time', 'mags'])
 
         if len(mags) == 0:
             continue
+
+        if ((time >= time_range[0]) & (time <= time_range[1])).sum() < mindata:
+
+            logger.warning("There is less than {0} data points in time range "
+                           "{1} days. Skipping {2} band {3}"
+                           .format(mindata, time_range, name, band))
 
         if plot_figure:
             plt.clf()
