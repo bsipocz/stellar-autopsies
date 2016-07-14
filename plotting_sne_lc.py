@@ -1,6 +1,7 @@
 # Light curve plotter script for Stellar Autopsies
 #
 
+import datetime
 import json
 import requests
 import logging
@@ -11,25 +12,31 @@ from astropy.table import Table
 from astropy.time import Time
 from astropy.coordinates import Distance
 
+timestamp = datetime.datetime.today().strftime("%Y-%m-%d_%H%M")
+
 logger = logging.getLogger()
 log_handler = logging.StreamHandler()
 log_handler.setLevel(logging.DEBUG)
+logfile_handler = logging.FileHandler('logs/plotting_' + timestamp + '.log')
+logfile_handler.setLevel(logging.DEBUG)
+logfile_handler.setFormatter(logging.Formatter(fmt="%(asctime)s %(message)s"))
 logger.setLevel(logging.DEBUG)
 log_handler.setFormatter(logging.Formatter(fmt="%(asctime)s %(message)s"))
-logger.addHandler(log_handler)
 
+logger.addHandler(log_handler)
+logger.addHandler(logfile_handler)
 
 sample = Table.read('OpenSupernovaCatalog.csv')
 
 bands = ['R', 'r', "r'"]
 
 write_text_lc = False
-plot_figure = True
+plot_figure = False
 
 time_range = (-20, 100)
 mag_range = (-15, -20)
 
-mindata = 15
+mindata = 10
 
 
 for name in sample['Name']:
